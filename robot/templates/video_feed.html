@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Borker</title>
+</head>
+<body>
+    <h1>RPi 0 Stream</h1>
+    <script>
+        var eventSource = new EventSource('/pir_data');
+        eventSource.onmessage = function(event) {
+            var pirState = event.data;
+            document.getElementById('pir-state').innerHTML = pirState;
+        };
+    </script>
+    <h3>PIR sensor state: <span id="pir-state"></span></h3>
+    <br>
+    <img src="{{ url_for('video_feed') }}" width="640" height="480">
+    <script>
+        function captureImage() {
+            var canvas = document.createElement('canvas');
+            var video = document.querySelector('video');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            var imageData = canvas.toDataURL('image/jpeg');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/capture_image');
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send('imageData=' + encodeURIComponent(imageData));
+        }
+    </script>
+</body>
+</html>
+
+
