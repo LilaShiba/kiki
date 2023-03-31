@@ -76,7 +76,7 @@ def capture():
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
     # Display the processed image on a separate page
-    return render_template('capture.html', filename=img_file_name)
+    return render_template('capture.html', file_path=img_file_name)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
