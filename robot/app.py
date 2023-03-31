@@ -86,26 +86,16 @@ def get_current_img():
     helper function to grab current img of video feed
     to be processed by jiji for emotion detection
     '''
-
+    print('cv2 start')
     # Initialize the camera
     camera = cv2.VideoCapture(0)  # Set the index to 0 to use the first camera
-
-    while True:
+    ret = False
+    while not ret:
         # Capture a frame
         ret, frame = camera.read()
-        # Check if the frame was captured successfully
-        if not ret:
-            print("Error: Failed to capture frame")
-            break
-        # Display the frame
-        cv2.imshow("Camera", frame)
-        # Wait for the user to press a key
-        key = cv2.waitKey(1)
-        # If the user pressed the "q" key, break the loop
-        if key == ord("q"):
-            break
     # Release the camera and close the window
-    cv2.imwrite('imgs/'+img_cnt +'.jpg', ret)
+    cv2.imwrite('imgs/'+img_cnt +'.jpg', frame)
+    print('image created')
     img_cnt+=1
     camera.release()
     cv2.destroyAllWindows()
