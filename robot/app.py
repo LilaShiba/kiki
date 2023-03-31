@@ -24,7 +24,11 @@ video_buffer = io.BytesIO()
 # Set up a condition variable for synchronization
 frame_ready = Condition()
 
-# Define a Flask route for the video stream
+# ROUTES
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/video_feed')
 def video_feed():
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
