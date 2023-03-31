@@ -1,6 +1,5 @@
 import os
 import io
-import cv2
 import time
 import picamera
 import subprocess
@@ -17,19 +16,24 @@ img_cnt = 0
 PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
-# Global camera
-camera = picamera.PiCamera()
-camera.resolution = (640, 480)
-camera.framerate = 30
-camera.start_preview()
 
 # Helpers
+# Global camera crashes GPU
+def cam_gal():
+    with picamera.PiCamera() as camera:
+        camera.resolution = (640, 480)
+        camera.framerate = 30
+        camera.brightness = 60
+        camera.contrast = 30
+        camera.start_preview()
+    return camera
+
 def gen():
+    camera = cam_gal()
     while True:
         frame = get_frame(camera)
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
         
 def generate_pir_data():
     while True:
@@ -53,6 +57,10 @@ def set_servo_pos(pos):
     pwm.ChangeDutyCycle(duty)
     time.sleep(0.3) # wait for servo to reach position
 
+# Route for the main page
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Route for the video stream
 @app.route('/video_feed')
@@ -60,18 +68,13 @@ def video_feed():
     return Response(gen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Route for the main page
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 # Route for the capture button
 @app.route('/capture')
-def capture():
+def capture(camera):
     # Capture a frame from the video stream
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     img = get_frame(camera)
-    cv2.imwrite(img_file_name, img)
+    camera.capture(img_file_name)
     # Display the processed image on a separate page
     return render_template('capture.html', filename=img_file_name)
 
