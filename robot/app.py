@@ -1,11 +1,13 @@
+import os
+import io
+import cv2
+import time
+import picamera
+import subprocess
+import numpy as np
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, Response
-import subprocess
-import picamera
-import io
-import time
-import cv2
-import os
+
 
 app = Flask(__name__)
 
@@ -67,16 +69,15 @@ def index():
 @app.route('/capture')
 def capture():
     # Capture a frame from the video stream
-    frame = np.empty((480, 640, 3), dtype=np.uint8)
-    camera.capture(frame, 'bgr', use_video_port=True)
+    img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
 
-    # Process the captured image using your Python script
-    # Replace this code with your own image processing script
-    processed_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite('static/processed_image.jpg', processed_image)
+    with picamera.PiCamera() as camera:
+        camera.resolution = (640, 480)
+        camera.capture('imgs/'+img_file_name)
+
 
     # Display the processed image on a separate page
-    return render_template('capture.html', filename='processed_image.jpg')
+    return render_template('capture.html', filename=img_file_name)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
