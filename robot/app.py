@@ -70,7 +70,6 @@ def video_feed():
 @app.route('/capture')
 def capture():
     # Capture a frame from the video stream
-    camera.close()
 
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
