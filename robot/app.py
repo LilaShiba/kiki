@@ -1,83 +1,50 @@
-import io
+from flask import Flask, render_template, Response, request, redirect, url_for
 import picamera
-import logging
-import socketserver
-from threading import Condition
-from http import server
-from flask import Flask, render_template, Response, request
-import os
-import time
 import cv2
+import numpy as np
+import os
 
-# Set up the Flask app
 app = Flask(__name__)
 
-# Set the desktop directory path
-desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop")
+# Set up the camera
+camera = picamera.PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 30
 
-# Set up the Raspberry Pi camera
-camera = picamera.PiCamera(resolution='640x480', framerate=24)
+# Initialize the video stream
+def gen():
+    while True:
+        frame = np.empty((480, 640, 3), dtype=np.uint8)
+        camera.capture(frame, 'bgr', use_video_port=True)
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
 
-# Set up a global buffer for the video frames
-video_buffer = io.BytesIO()
+# Route for the video stream
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Set up a condition variable for synchronization
-frame_ready = Condition()
-
-# ROUTES
+# Route for the main page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# Define a Flask route for the capture button
+# Route for the capture button
 @app.route('/capture')
 def capture():
-    # Create a unique filename using the current timestamp
-    filename = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
+    # Capture a frame from the video stream
+    frame = np.empty((480, 640, 3), dtype=np.uint8)
+    camera.capture(frame, 'bgr', use_video_port=True)
 
-    # Convert the latest video frame to an image
-    video_buffer.seek(0)
-    frame = cv2.imdecode(np.frombuffer(video_buffer.getvalue(), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    # Process the captured image using your Python script
+    # Replace this code with your own image processing script
+    processed_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cv2.imwrite('static/processed_image.jpg', processed_image)
 
-    # Save the image to the desktop directory
-    cv2.imwrite(os.path.join(desktop_dir, filename), frame)
-
-    # Return a response indicating success
-    return "Capture successful: " + filename
-
-# Define a generator function to capture video frames and stream them to the Flask app
-def generate():
-    global video_buffer
-    global frame_ready
-
-    while True:
-        with frame_ready:
-            # Wait for a new video frame to be available
-            frame_ready.wait()
-
-            # Copy the latest video frame to the buffer
-            camera.capture(video_buffer, format='jpeg', use_video_port=True)
-            video_buffer.seek(0)
-
-        # Yield the latest video frame as a byte string
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + video_buffer.getvalue() + b'\r\n')
-
-# Define a function to run the Flask app and video stream server
-def run():
-    try:
-        # Start the video capture and streaming
-        camera.start_preview()
-        time.sleep(2)
-        app.run(host='0.0.0.0', threaded=True)
-    finally:
-        # Clean up resources
-        camera.stop_preview()
-        camera.close()
+    # Display the processed image on a separate page
+    return render_template('capture.html', filename='processed_image.jpg')
 
 if __name__ == '__main__':
-    run()
+    app.run(host='0.0.0.0', port=8000, debug=True)
