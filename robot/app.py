@@ -5,6 +5,7 @@ import picamera
 import io
 import time
 import cv2
+import os
 
 app = Flask(__name__)
 
@@ -83,21 +84,19 @@ def gen():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 def get_current_img():
-    '''
-    helper function to grab current img of video feed
-    to be processed by jiji for emotion detection
-    '''
-    print('cv2 start')
-    # Initialize the camera
-    camera = cv2.VideoCapture(0)  # Set the index to 0 to use the first camera
-    print('camera running')
-    ret, frame = camera.read()
-    # Release the camera and close the window
-    cv2.imwrite('imgs/test.jpg', frame)
-    print('image created')
-    img_cnt+=1
-    camera.release()
-    cv2.destroyAllWindows()
+    
+    
+    #Create a unique filename using the current timestamp
+    filename = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
+    print('filename', filename)
+    # Capture an image using the PiCamera module
+    with picamera.PiCamera() as camera:
+        camera.resolution = (1024, 768)  # Set the resolution of the image
+        camera.start_preview()  # Start a preview of what the camera is seeing
+        time.sleep(2)  # Give the camera time to adjust to lighting conditions
+        camera.capture(os.path.join('imgs/', filename))  # Save the image to the desktop directory
+
+    print("Image saved as:", filename)
 
 def generate_pir_data():
     while True:
