@@ -17,18 +17,18 @@ img_cnt = 0
 PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
-
+# Global camera
+camera = picamera.PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 30
+camera.start_preview()
 
 # Helpers
 def gen():
-    with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.framerate = 30
-        camera.start_preview()
-        while True:
-            frame = get_frame(camera)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    while True:
+        frame = get_frame(camera)
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         
 def generate_pir_data():
@@ -70,13 +70,8 @@ def index():
 def capture():
     # Capture a frame from the video stream
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
-    
-    with picamera.PiCamera() as camera:
-        img = get_frame(camera)
-        cv2.imwrite(img_file_name, img)
-
-    
-
+    img = get_frame(camera)
+    cv2.imwrite(img_file_name, img)
     # Display the processed image on a separate page
     return render_template('capture.html', filename=img_file_name)
 
