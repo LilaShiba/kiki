@@ -4,11 +4,12 @@ import subprocess
 import picamera
 import io
 import time
+import cv2
 
 app = Flask(__name__)
 
 # TODO Setup fan controls
-
+img_cnt = 0
 # PIR MOTION SENSOR
 PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
@@ -65,6 +66,7 @@ def sensor_data():
 # TODO pipe jiji through here
 @app.route('/run_jiji',methods=['POST'])
 def run_jiji():
+    get_current_img()
     script_output = subprocess.check_output(['python', 'scripts/test.py'])
     return render_template('result.html', output=script_output)
 
@@ -78,6 +80,35 @@ def gen():
             frame = get_frame(camera)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+def get_current_img():
+    '''
+    helper function to grab current img of video feed
+    to be processed by jiji for emotion detection
+    '''
+
+    # Initialize the camera
+    camera = cv2.VideoCapture(0)  # Set the index to 0 to use the first camera
+
+    while True:
+        # Capture a frame
+        ret, frame = camera.read()
+        # Check if the frame was captured successfully
+        if not ret:
+            print("Error: Failed to capture frame")
+            break
+        # Display the frame
+        cv2.imshow("Camera", frame)
+        # Wait for the user to press a key
+        key = cv2.waitKey(1)
+        # If the user pressed the "q" key, break the loop
+        if key == ord("q"):
+            break
+    # Release the camera and close the window
+    cv2.imwrite('imgs/'+img_cnt +'.jpg', ret)
+    img_cnt+=1
+    camera.release()
+    cv2.destroyAllWindows()
 
 def generate_pir_data():
     while True:
