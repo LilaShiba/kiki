@@ -90,10 +90,11 @@ def get_current_img():
     print('cv2 start')
     # Initialize the camera
     camera = cv2.VideoCapture(0)  # Set the index to 0 to use the first camera
-    ret = False
-    while not ret:
+    while True:
         # Capture a frame
         ret, frame = camera.read()
+        if ret:
+            break
     # Release the camera and close the window
     cv2.imwrite('imgs/'+img_cnt +'.jpg', frame)
     print('image created')
