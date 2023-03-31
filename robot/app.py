@@ -1,11 +1,12 @@
 import os
 import io
 import time
-import picamera
+from picamera import PiCamera
 import subprocess
 import numpy as np
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, Response
+
 
 
 app = Flask(__name__)
@@ -17,22 +18,21 @@ PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 
-camera = picamera.PiCamera()
+camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 30
 camera.brightness = 60
 camera.contrast = 30
-camera.start_preview()
 # Global camera crashes GPU
-    
-# Helpers
 
 def gen():
+    camera.start_preview()
     while True:
         frame = get_frame()
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        
+    
+
 def generate_pir_data():
     while True:
         pir_state = GPIO.input(PIR_PIN)
@@ -70,11 +70,13 @@ def video_feed():
 @app.route('/capture')
 def capture():
     # Capture a frame from the video stream
+    camera.close()
+
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
-    img = get_frame(camera)
     camera.capture(img_file_name)
     # Display the processed image on a separate page
     return render_template('capture.html', filename=img_file_name)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8000, debug=False)
+
