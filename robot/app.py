@@ -1,24 +1,34 @@
-from flask import Flask, render_template, Response, request, redirect, url_for
+import RPi.GPIO as GPIO
+from flask import Flask, render_template, Response
+import subprocess
 import picamera
+import io
+import time
 import cv2
-import numpy as np
 import os
 
 app = Flask(__name__)
 
-# Set up the camera
-camera = picamera.PiCamera()
-camera.resolution = (640, 480)
-camera.framerate = 30
+# TODO Setup fan controls
+img_cnt = 0
+# PIR MOTION SENSOR
+PIR_PIN = 26
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIR_PIN, GPIO.IN)
 
-# Initialize the video stream
+
+
+
+
 def gen():
-    while True:
-        frame = np.empty((480, 640, 3), dtype=np.uint8)
-        camera.capture(frame, 'bgr', use_video_port=True)
-        ret, jpeg = cv2.imencode('.jpg', frame)
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+    with picamera.PiCamera() as camera:
+        camera.resolution = (640, 480)
+        camera.framerate = 30
+        camera.start_preview()
+        while True:
+            frame = get_frame(camera)
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 # Route for the video stream
 @app.route('/video_feed')
