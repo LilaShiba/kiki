@@ -17,21 +17,19 @@ PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 
-# Helpers
+camera = picamera.PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 30
+camera.brightness = 60
+camera.contrast = 30
+camera.start_preview()
 # Global camera crashes GPU
-def cam_gal():
-    with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.framerate = 30
-        camera.brightness = 60
-        camera.contrast = 30
-        camera.start_preview()
-    return camera
+    
+# Helpers
 
 def gen():
-    camera = cam_gal()
     while True:
-        frame = get_frame(camera)
+        frame = get_frame()
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         
@@ -41,7 +39,7 @@ def generate_pir_data():
         yield f"data: {pir_state}\n\n"
         time.sleep(0.1)
 
-def get_frame(camera):
+def get_frame():
     stream = io.BytesIO()
     camera.capture(stream, format='jpeg', use_video_port=True)
     frame = stream.getvalue()
@@ -70,7 +68,7 @@ def video_feed():
 
 # Route for the capture button
 @app.route('/capture')
-def capture(camera):
+def capture():
     # Capture a frame from the video stream
     img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     img = get_frame(camera)
