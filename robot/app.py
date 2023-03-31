@@ -69,12 +69,13 @@ def index():
 @app.route('/capture')
 def capture():
     # Capture a frame from the video stream
-    img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
-
+    img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
+    
     with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.capture('imgs/'+img_file_name)
+        img = get_frame(camera)
+        cv2.imwrite(img_file_name, img)
 
+    
 
     # Display the processed image on a separate page
     return render_template('capture.html', filename=img_file_name)
