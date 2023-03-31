@@ -72,7 +72,7 @@ def video_feed():
 def capture():
     # Capture a frame from the video stream
 
-    img_file_name = "templates/imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
+    img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
     # Display the processed image on a separate page
     return render_template('capture.html', file_path=img_file_name)
