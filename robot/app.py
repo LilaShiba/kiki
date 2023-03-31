@@ -17,9 +17,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 
 
-
-
-
+# Helpers
 def gen():
     with picamera.PiCamera() as camera:
         camera.resolution = (640, 480)
@@ -29,6 +27,30 @@ def gen():
             frame = get_frame(camera)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        
+def generate_pir_data():
+    while True:
+        pir_state = GPIO.input(PIR_PIN)
+        yield f"data: {pir_state}\n\n"
+        time.sleep(0.1)
+
+def get_frame(camera):
+    stream = io.BytesIO()
+    camera.capture(stream, format='jpeg', use_video_port=True)
+    frame = stream.getvalue()
+    stream.seek(0)
+    stream.truncate()
+    return frame
+
+def set_servo_pos(pos):
+    # setup PWM
+    pwm = GPIO.PWM(servo_pin, freq)
+    pwm.start(0)
+    duty = duty_min + (pos/180)*(duty_max - duty_min)
+    pwm.ChangeDutyCycle(duty)
+    time.sleep(0.3) # wait for servo to reach position
+
 
 # Route for the video stream
 @app.route('/video_feed')
