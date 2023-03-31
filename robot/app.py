@@ -15,12 +15,13 @@ PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 
+
 # Servo 1 -> orientation
-servo_pin = 18 # GPIO pin connected to servo signal wire
-freq = 50 # PWM frequency in Hz
-duty_min = 2.5 # duty cycle for minimum servo position in percent
-duty_max = 12.5 # duty cycle for maximum servo position in percent
-GPIO.setup(servo_pin, GPIO.OUT)
+# servo_pin = 18 # GPIO pin connected to servo signal wire
+# freq = 50 # PWM frequency in Hz
+# duty_min = 2.5 # duty cycle for minimum servo position in percent
+# duty_max = 12.5 # duty cycle for maximum servo position in percent
+# GPIO.setup(servo_pin, GPIO.OUT)
 
 
 
@@ -50,8 +51,8 @@ def sensor_data():
             pir_value = GPIO.input(PIR_PIN)
 
             # Print the sensor value
-            if pir_value:
-                print("Motion detected!")
+            #if pir_value:
+                #print("Motion detected!")
             
 
             # Wait for a short time before reading the sensor again
