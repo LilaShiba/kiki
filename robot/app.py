@@ -23,7 +23,6 @@ camera.resolution = (640, 480)
 camera.framerate = 30
 camera.brightness = 70
 camera.contrast = 30
-img_file_name = "imgs/"+time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
 
 # Global camera crashes GPU
 
