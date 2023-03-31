@@ -1,124 +1,79 @@
-import RPi.GPIO as GPIO
-from flask import Flask, render_template, Response
-import subprocess
-import picamera
 import io
+import picamera
+import logging
+import socketserver
+from threading import Condition
+from http import server
+from flask import Flask, render_template, Response, request
+import os
 import time
 import cv2
-import os
 
+# Set up the Flask app
 app = Flask(__name__)
 
-# TODO Setup fan controls
-img_cnt = 0
-# PIR MOTION SENSOR
-PIR_PIN = 26
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(PIR_PIN, GPIO.IN)
+# Set the desktop directory path
+desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop")
 
+# Set up the Raspberry Pi camera
+camera = picamera.PiCamera(resolution='640x480', framerate=24)
 
-# Servo 1 -> orientation
-# servo_pin = 18 # GPIO pin connected to servo signal wire
-# freq = 50 # PWM frequency in Hz
-# duty_min = 2.5 # duty cycle for minimum servo position in percent
-# duty_max = 12.5 # duty cycle for maximum servo position in percent
-# GPIO.setup(servo_pin, GPIO.OUT)
+# Set up a global buffer for the video frames
+video_buffer = io.BytesIO()
 
+# Set up a condition variable for synchronization
+frame_ready = Condition()
 
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/pir_data')
-def pir_data():
-    return Response(generate_pir_data(), mimetype='text/event-stream')
-
+# Define a Flask route for the video stream
 @app.route('/video_feed')
 def video_feed():
-    
-    return Response(gen() , mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/sensor_data')
-def sensor_data():
-    # Wait for the sensor to settle
-    print("Waiting for sensor to settle...")
-    time.sleep(2)
-    print("Ready")
-
-    try:
-        while True:
-            # Read the sensor value
-            pir_value = GPIO.input(PIR_PIN)
-
-            # Print the sensor value
-            #if pir_value:
-                #print("Motion detected!")
-            
-
-            # Wait for a short time before reading the sensor again
-            time.sleep(0.5)
-
-    except KeyboardInterrupt:
-        print("Exiting program...")
-    finally:
-        # Clean up the GPIO pins
-        GPIO.cleanup()
-
-# TODO pipe jiji through here
-@app.route('/run_jiji',methods=['POST'])
-def run_jiji():
-    get_current_img()
-    script_output = subprocess.check_output(['python', 'scripts/test.py'])
-    return render_template('result.html', output=script_output)
-
-# Helpers
-def gen():
-    with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.framerate = 30
-        camera.start_preview()
-        while True:
-            frame = get_frame(camera)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-def get_current_img():
-    
-    
-    #Create a unique filename using the current timestamp
+# Define a Flask route for the capture button
+@app.route('/capture')
+def capture():
+    # Create a unique filename using the current timestamp
     filename = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
-    print('filename', filename)
-    # Capture an image using the PiCamera module
-    with picamera.PiCamera() as camera:
-        camera.resolution = (1024, 768)  # Set the resolution of the image
-        camera.start_preview()  # Start a preview of what the camera is seeing
-        time.sleep(2)  # Give the camera time to adjust to lighting conditions
-        camera.capture(os.path.join('imgs/', filename))  # Save the image to the desktop directory
 
-    print("Image saved as:", filename)
+    # Convert the latest video frame to an image
+    video_buffer.seek(0)
+    frame = cv2.imdecode(np.frombuffer(video_buffer.getvalue(), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
 
-def generate_pir_data():
+    # Save the image to the desktop directory
+    cv2.imwrite(os.path.join(desktop_dir, filename), frame)
+
+    # Return a response indicating success
+    return "Capture successful: " + filename
+
+# Define a generator function to capture video frames and stream them to the Flask app
+def generate():
+    global video_buffer
+    global frame_ready
+
     while True:
-        pir_state = GPIO.input(PIR_PIN)
-        yield f"data: {pir_state}\n\n"
-        time.sleep(0.1)
+        with frame_ready:
+            # Wait for a new video frame to be available
+            frame_ready.wait()
 
-def get_frame(camera):
-    stream = io.BytesIO()
-    camera.capture(stream, format='jpeg', use_video_port=True)
-    frame = stream.getvalue()
-    stream.seek(0)
-    stream.truncate()
-    return frame
+            # Copy the latest video frame to the buffer
+            camera.capture(video_buffer, format='jpeg', use_video_port=True)
+            video_buffer.seek(0)
 
-def set_servo_pos(pos):
-    # setup PWM
-    pwm = GPIO.PWM(servo_pin, freq)
-    pwm.start(0)
-    duty = duty_min + (pos/180)*(duty_max - duty_min)
-    pwm.ChangeDutyCycle(duty)
-    time.sleep(0.3) # wait for servo to reach position
+        # Yield the latest video frame as a byte string
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + video_buffer.getvalue() + b'\r\n')
+
+# Define a function to run the Flask app and video stream server
+def run():
+    try:
+        # Start the video capture and streaming
+        camera.start_preview()
+        time.sleep(2)
+        app.run(host='0.0.0.0', threaded=True)
+    finally:
+        # Clean up resources
+        camera.stop_preview()
+        camera.close()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    run()
