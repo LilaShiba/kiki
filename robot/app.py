@@ -82,9 +82,9 @@ def capture():
 
 @app.route('/pir')
 def pir_data():
-    sensor_data = generate_pir_data()
-    return render_template('pir.html', sensor_data=sensor_data)
-    #return Response(generate_pir_data(), mimetype='text/event-stream')
+    #sensor_data = generate_pir_data()
+    #return render_template('pir.html', sensor_data=sensor_data)
+    return Response(generate_pir_data(), mimetype='text/event-stream')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
