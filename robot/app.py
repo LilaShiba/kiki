@@ -28,7 +28,13 @@ def gen():
         frame = get_frame()
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    
+
+def generate_pir_data():
+    while True:
+        pir_state = GPIO.input(PIR_PIN)
+        yield f"data: {pir_state}\n\n"
+        time.sleep(0.1)
+
 def get_sensor_data(sensor_pin=PIR_PIN):
     GPIO.setup(sensor_pin, GPIO.IN)
     return GPIO.input(sensor_pin)
@@ -70,17 +76,14 @@ def capture():
     # Display the processed image on a separate page
     return render_template('capture.html', file_path=img_file_name)
 
-
+#TODO FIX Stream to be live
 @app.route('/stream')
 def stream():
-    def generate():
-        while True:
-            sensor_data = get_sensor_data()
-            yield str(sensor_data)
-            time.sleep(1)
+    return Response(get_sensor_data())
 
-    return Response(stream_with_context(generate()))
-
+@app.route('/pir_data')
+def pir_data():
+    return Response(generate_pir_data(), mimetype='text/event-stream')
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
 
