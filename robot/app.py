@@ -18,11 +18,13 @@ PIR_PIN = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 
+
+
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 30
-camera.brightness = 70
-camera.contrast = 30
+# camera.brightness = 70
+# camera.contrast = 30
 
 # Global camera crashes GPU
 
@@ -76,6 +78,11 @@ def capture():
     camera.capture(img_file_name)
     # Display the processed image on a separate page
     return render_template('capture.html', file_path=img_file_name)
+
+
+@app.route('/pir_data')
+def pir_data():
+    return Response(generate_pir_data(), mimetype='text/event-stream')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)

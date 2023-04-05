@@ -30,11 +30,11 @@ def freq_count(path):
     plt.show()
 
 
-    plt.xlabel('K')
-    plt.ylabel('P(K)')
-    plt.title('Prob Vector')
-    plt.scatter(px, py)
-    plt.show()
+    # plt.xlabel('K')
+    # plt.ylabel('P(K)')
+    # plt.title('Prob Vector')
+    # plt.scatter(px, py)
+    # plt.show()
 
 
 
@@ -43,10 +43,11 @@ def freq_count(path):
 
 
 
-freq_count('book.txt')
-freq_count('book2.txt')
-freq_count('book3.txt')
 
+
+
+freq_count('/Users/kjames/Desktop/kiki/students/book.txt')
+freq_count('/Users/kjames/Desktop/kiki/students/b3_coded.txt')
 
 
 

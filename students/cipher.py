@@ -1,29 +1,34 @@
-def caesar_cipher(text, shift):
-    """
-    Encrypts a string using the Caesar Cipher algorithm with a specified shift.
+def caesar_cipher(input_path, shift_value, output_path):
+    # Read the input file
+    with open(input_path, 'r') as file:
+        input_text = file.read()
 
-    :param text: The string to be encrypted.
-    :param shift: The number of positions to shift each letter in the string.
-    :return: The encrypted string.
-    """
+    # Convert the shift value to an integer
+    shift_value = int(shift_value)
 
-    # Convert the text to uppercase for consistency
-    text = text.upper()
+    # Define the alphabet (including spaces and punctuation)
+    alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .,!?:;-_'
 
-    # Initialize the encrypted string
-    encrypted_text = ""
-
-    # Loop through each character in the string
-    for char in text:
-        if char.isalpha():
-            # Shift the character by the specified amount
-            shifted_char = chr((ord(char) - 65 + shift) % 26 + 65)
-            encrypted_text += shifted_char
+    # Define a function to shift a single character
+    def shift_char(char, shift_value):
+        if char in alphabet:
+            old_index = alphabet.index(char)
+            new_index = (old_index + shift_value) % len(alphabet)
+            return alphabet[new_index]
         else:
-            # Non-alphabetic characters are unchanged
-            encrypted_text += char
+            return char
 
-    return encrypted_text
+    # Define a function to apply the shift to a string
+    def shift_string(string, shift_value):
+        shifted_chars = [shift_char(char, shift_value) for char in string]
+        return ''.join(shifted_chars)
+
+    # Apply the shift to the input text
+    output_text = shift_string(input_text, shift_value)
+
+    # Write the output to a file
+    with open(output_path, 'w') as file:
+        file.write(output_text)
 
 
-
+caesar_cipher('/Users/kjames/Desktop/kiki/students/book3.txt',8,'/Users/kjames/Desktop/kiki/students/b3_coded.txt')
