@@ -80,7 +80,7 @@ def capture():
     return render_template('capture.html', file_path=img_file_name)
 
 
-@app.route('/pir_data')
+@app.route('/pir')
 def pir_data():
     return Response(generate_pir_data(), mimetype='text/event-stream')
 
