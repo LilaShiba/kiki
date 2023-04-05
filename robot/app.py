@@ -11,21 +11,16 @@ from flask import Flask, render_template, Response, stream_with_context
 
 app = Flask(__name__)
 
-# TODO Setup fan controls
 img_cnt = 0
 # PIR MOTION SENSOR
 GPIO.setmode(GPIO.BCM)
 PIR_PIN = 26
-
-
-
+# Set up NoIR v2
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 30
 # camera.brightness = 70
 # camera.contrast = 30
-
-# Global camera crashes GPU
 
 def gen():
     camera.start_preview()
@@ -34,11 +29,10 @@ def gen():
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
     
-
-
-def get_sensor_data():
-    GPIO.setup(PIR_PIN, GPIO.IN)
-    return GPIO.input(PIR_PIN)
+def get_sensor_data(sensor_pin=PIR_PIN):
+    GPIO.setup(sensor_pin, GPIO.IN)
+    while True:
+        yield GPIO.input(sensor_pin)
 
 def get_frame():
     stream = io.BytesIO()
@@ -80,13 +74,11 @@ def capture():
 
 @app.route('/pir')
 def stream():
-    def generate():
-        while True:
-            sensor_data = get_sensor_data()
-            yield str(sensor_data)
-            time.sleep(1)
 
-    return Response(stream_with_context(generate()))
+
+    return Response(get_sensor_data(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
