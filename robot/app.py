@@ -31,8 +31,7 @@ def gen():
     
 def get_sensor_data(sensor_pin=PIR_PIN):
     GPIO.setup(sensor_pin, GPIO.IN)
-    while True:
-        yield GPIO.input(sensor_pin)
+    return GPIO.input(sensor_pin)
 
 def get_frame():
     stream = io.BytesIO()
@@ -74,11 +73,13 @@ def capture():
 
 @app.route('/pir')
 def stream():
+    def generate():
+        while True:
+            sensor_data = get_sensor_data()
+            yield str(sensor_data)
+            time.sleep(1)
 
-
-    return Response(get_sensor_data(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
+    return Response(stream_with_context(generate()))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
