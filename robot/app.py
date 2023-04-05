@@ -5,7 +5,7 @@ from picamera import PiCamera
 import subprocess
 import numpy as np
 import RPi.GPIO as GPIO
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, stream_with_context
 
 
 
