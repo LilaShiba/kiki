@@ -71,7 +71,7 @@ def capture():
     return render_template('capture.html', file_path=img_file_name)
 
 
-@app.route('/pir')
+@app.route('/stream')
 def stream():
     def generate():
         while True:
