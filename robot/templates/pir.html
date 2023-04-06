@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>PIR Sensor Data</title>
-  </head>
-  <body>
-    <h1>PIR Sensor Data:</h1>
-    <textarea id="sensor-data" rows="10" cols="50"></textarea>
-    <script>
-      var source = new EventSource("/stream");
-      source.onmessage = function(event) {
-        document.getElementById("sensor-data").value += event.data + "\n";
-      };
-    </script>
-  </body>
+</head>
+<body>
+    <h1>PIR Sensor Data</h1>
+    <p>Status: {{ data.status }}</p>
+</body>
 </html>
