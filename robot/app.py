@@ -11,17 +11,14 @@ from flask import Flask, render_template, Response, stream_with_context
 
 app = Flask(__name__)
 
-img_cnt = 0
-# PIR MOTION SENSOR
-GPIO.setmode(GPIO.BCM)
-PIR_PIN = 26
-# Set up NoIR v2
+
+# Set up hardware
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 30
-# camera.brightness = 70
-# camera.contrast = 30
-IR_LED_PIN = 17  # The GPIO pin number where the IR LED is connected
+PIR_PIN = 26
+IR_LED_PIN = 17  
+SERVO_PIN = 18
 
 def gen():
     camera.start_preview()
@@ -31,6 +28,7 @@ def gen():
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 def generate_pir_data():
+    GPIO.setmode(GPIO.BCM)
     while True:
         pir_state = GPIO.input(PIR_PIN)
         yield f"data: {pir_state}\n\n"
@@ -50,7 +48,14 @@ def get_frame():
 
 def set_servo_pos(pos):
     # setup PWM
-    pwm = GPIO.PWM(servo_pin, freq)
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(SERVO_PIN, GPIO.OUT)
+
+    freq = 50 # PWM frequency in Hz
+    duty_min = 2.5 # duty cycle for minimum servo position in percent
+    duty_max = 12.5 # duty cycle for maximum servo position in percent
+
+    pwm = GPIO.PWM(SERVO_PIN, freq)
     pwm.start(0)
     duty = duty_min + (pos/180)*(duty_max - duty_min)
     pwm.ChangeDutyCycle(duty)
@@ -91,6 +96,7 @@ def capture():
 def stream():
     return Response(get_sensor_data())
 
+# Motion Sensor
 @app.route('/pir')
 def pir():
     if GPIO.input(PIR_PIN):
@@ -98,7 +104,7 @@ def pir():
     else:
         data = {'status': 'No motion'}
     return render_template('pir.html', data=data)
-
+# IR Blaster
 @app.rout('/ir')
 def ir():
     while True:
