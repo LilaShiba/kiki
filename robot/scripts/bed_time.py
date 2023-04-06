@@ -9,8 +9,8 @@ GPIO.setup(IR_LED_PIN, GPIO.OUT)
 
 def send_ir_signal(pulses):
     for pulse in pulses:
-        GPIO.output(IR_LED_PIN, GPIO.HIGH)
-        time.sleep(pulse[0] / 1000000.0)
+        #GPIO.output(IR_LED_PIN, GPIO.HIGH)
+        #time.sleep(pulse[0] / 1000000.0)
         GPIO.output(IR_LED_PIN, GPIO.LOW)
         time.sleep(pulse[1] / 1000000.0)
 
