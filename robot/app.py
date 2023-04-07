@@ -9,7 +9,7 @@ from flask import Flask, render_template, Response, stream_with_context
 
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 
 # Set up hardware
