@@ -6,7 +6,7 @@
     <body>
         <h1>Capture Successful</h1>
         <p>The captured image has been processed and saved as {{ data.img_file_name }}.</p>
-        <img src="{{ url_for('static', filename='imgs/' + data.img_file_name) }}" alt="Image">
+        <img src="{{ url_for('serve_image', filename='imgs/' + data.img_file_name) }}" alt="Image">
 
     </body>
 </html>
