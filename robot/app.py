@@ -19,7 +19,13 @@ camera.framerate = 30
 PIR_PIN = 26
 IR_LED_PIN = 17  
 SERVO_PIN = 18
+
+# Set GPIO pins
 GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIR_PIN, GPIO.IN)
+GPIO.setup(IR_LED_PIN, GPIO.OUT)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+
 
 def gen():
     camera.start_preview()
@@ -30,6 +36,10 @@ def gen():
 
 def generate_pir_data():
     #GPIO.setmode(GPIO.BCM)
+    # TODO: Make Dynamic
+    sensor_pin = PIR_PIN
+    GPIO.setup(sensor_pin, GPIO.IN)
+
     while True:
         pir_state = GPIO.input(PIR_PIN)
         yield f"data: {pir_state}\n\n"
@@ -50,7 +60,6 @@ def get_frame():
 def set_servo_pos(pos):
     # setup PWM
     #GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(SERVO_PIN, GPIO.OUT)
 
     freq = 50 # PWM frequency in Hz
     duty_min = 2.5 # duty cycle for minimum servo position in percent
@@ -63,8 +72,7 @@ def set_servo_pos(pos):
     time.sleep(0.3) # wait for servo to reach position
 
 def send_ir_signal(pulses):
-    #GPIO.setmode(GPIO.BCM)
-    GPIO.setup(IR_LED_PIN, GPIO.OUT)
+    #GPIO.setup(IR_LED_PIN, GPIO.OUT)
     for pulse in pulses:
         GPIO.output(IR_LED_PIN, GPIO.HIGH)
         time.sleep(pulse[0] / 1000000.0)
