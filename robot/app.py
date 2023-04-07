@@ -107,7 +107,7 @@ def pir():
     return render_template('pir.html', data=data)
 
 # IR Blaster
-@app.rout('/ir')
+@app.route('/ir')
 def ir():
     while True:
         # Send the IR signal for the selected device
