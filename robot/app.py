@@ -5,11 +5,11 @@ from picamera import PiCamera
 import subprocess
 import numpy as np
 import RPi.GPIO as GPIO
-from flask import Flask, render_template, Response, stream_with_context
+from flask import Flask, render_template, Response, stream_with_context,url_for
 
 
 
-app = Flask(__name__,static_url_path='/imgs')
+app = Flask(__name__)
 
 # Set up hardware
 camera = PiCamera()
@@ -96,9 +96,10 @@ def capture():
 
     img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
-    data = {'img_file_name': img_file_name}
+    image_url = url_for('static', filename=img_file_name)
+    #data = {'img_file_name': img_file_name}
     # Display the processed image on a separate page
-    return render_template('capture.html', data=data)
+    return render_template('capture.html', image_url=image_url)
 
 #TODO FIX Stream to be live
 @app.route('/stream')
