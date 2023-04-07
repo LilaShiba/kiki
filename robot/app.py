@@ -97,8 +97,9 @@ def capture():
 
     img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
+    data = {'img_file_name': img_file_name}
     # Display the processed image on a separate page
-    return render_template('capture.html', data=img_file_name)
+    return render_template('capture.html', data=data)
 
 #TODO FIX Stream to be live
 @app.route('/stream')
