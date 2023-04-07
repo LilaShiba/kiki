@@ -95,7 +95,7 @@ def capture():
     # Capture a frame from the video stream
 
     img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
-    camera.capture(img_file_name)
+    camera.capture('static/'+img_file_name)
     image_url = url_for('static', filename=img_file_name)
     #data = {'img_file_name': img_file_name}
     # Display the processed image on a separate page
