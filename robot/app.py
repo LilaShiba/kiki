@@ -19,6 +19,7 @@ camera.framerate = 30
 PIR_PIN = 26
 IR_LED_PIN = 17  
 SERVO_PIN = 18
+GPIO.setmode(GPIO.BCM)
 
 def gen():
     camera.start_preview()
@@ -28,7 +29,7 @@ def gen():
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 def generate_pir_data():
-    GPIO.setmode(GPIO.BCM)
+    #GPIO.setmode(GPIO.BCM)
     while True:
         pir_state = GPIO.input(PIR_PIN)
         yield f"data: {pir_state}\n\n"
@@ -48,7 +49,7 @@ def get_frame():
 
 def set_servo_pos(pos):
     # setup PWM
-    GPIO.setmode(GPIO.BOARD)
+    #GPIO.setmode(GPIO.BOARD)
     GPIO.setup(SERVO_PIN, GPIO.OUT)
 
     freq = 50 # PWM frequency in Hz
@@ -62,7 +63,7 @@ def set_servo_pos(pos):
     time.sleep(0.3) # wait for servo to reach position
 
 def send_ir_signal(pulses):
-    GPIO.setmode(GPIO.BCM)
+    #GPIO.setmode(GPIO.BCM)
     GPIO.setup(IR_LED_PIN, GPIO.OUT)
     for pulse in pulses:
         GPIO.output(IR_LED_PIN, GPIO.HIGH)
@@ -104,6 +105,7 @@ def pir():
     else:
         data = {'status': 'No motion'}
     return render_template('pir.html', data=data)
+
 # IR Blaster
 @app.rout('/ir')
 def ir():
