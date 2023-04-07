@@ -98,7 +98,7 @@ def capture():
     img_file_name = time.strftime("%Y-%m-%d_%H-%M-%S") + ".jpg"
     camera.capture(img_file_name)
     # Display the processed image on a separate page
-    return render_template('capture.html', file_path=img_file_name)
+    return render_template('capture.html', data=img_file_name)
 
 #TODO FIX Stream to be live
 @app.route('/stream')
@@ -117,13 +117,13 @@ def pir():
 # IR Blaster
 @app.route('/ir')
 def ir():
-    while True:
+   # while True:
         # Send the IR signal for the selected device
-        for device, value in off_signals.items():
-            send_ir_signal(off_signals[device])
-            time.sleep(1)  # Wait for 1 second before sending another signal
-        cycle = {'status': 'complete'}
-        return render_template('ir.html',data=cycle)
+    for device, value in off_signals.items():
+        send_ir_signal(off_signals[device])
+        time.sleep(1)  # Wait for 1 second before sending another signal
+    cycle = {'status': 'complete'}
+    return render_template('ir.html',data=cycle)
     
 
 # IR pulses for various off commands
