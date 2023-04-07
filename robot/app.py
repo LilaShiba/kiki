@@ -99,7 +99,7 @@ def capture():
     image_url = url_for('static', filename=img_file_name)
     #data = {'img_file_name': img_file_name}
     # Display the processed image on a separate page
-    return render_template('capture.html', image_url=image_url)
+    return render_template('capture.html', image_url=img_file_name)
 
 #TODO FIX Stream to be live
 @app.route('/stream')
