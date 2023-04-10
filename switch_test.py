@@ -6,7 +6,7 @@ SWITCH_PIN = 26
 # Set up the GPIO pin
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SWITCH_PIN, GPIO.IN)
-
+continous = 0
 # Define the function to run the program
 def run_program():
     #subprocess.call(["/path/to/your/program"])
@@ -17,11 +17,15 @@ def run_program():
 while True:
     # read the state of the channel
     input_state = GPIO.input(SWITCH_PIN)
-
     # perform some action based on the input state
-    if input_state == GPIO.HIGH:
-        print("Button is not pressed")
+    if input_state == GPIO.LOW:
+        flag = False
     else:
-        print("Button is pressed")
-    time.sleep(1)
+        flag = True
+    continous += 1
+    if flag:
+        continous = 0
+    if continous > 50:
+         print("Button is pressed")
 
+                              
