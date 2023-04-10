@@ -12,7 +12,14 @@ def run_program():
     print('me-wow!')
 
 # Wait for the switch to be pressed
+
 while True:
-    if GPIO.input(SWITCH_PIN) == GPIO.LOW:
-        run_program()
+    # read the state of the channel
+    input_state = GPIO.input(SWITCH_PIN)
+
+    # perform some action based on the input state
+    if input_state == GPIO.HIGH:
+        print("Button is not pressed")
+    else:
+        print("Button is pressed")
 
