@@ -19,7 +19,7 @@ while True:
 
     # perform some action based on the input state
     if input_state == GPIO.HIGH:
-        print("Button is not pressed")
-    else:
-        print("Button is pressed")
+        run_program()
+        
+ 
 
