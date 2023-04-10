@@ -27,6 +27,7 @@ while True:
         continous = 0
 
     if continous > 150:
+        print('meow woof woof')
         
 
                               
