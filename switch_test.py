@@ -19,9 +19,9 @@ while True:
     input_state = GPIO.input(SWITCH_PIN)
     # perform some action based on the input state
     if input_state == GPIO.LOW:
-        flag = False
-    else:
         flag = True
+    else:
+        flag = False
     continous += 1
     if flag:
         continous = 0
