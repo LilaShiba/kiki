@@ -13,6 +13,6 @@ def run_program():
 
 # Wait for the switch to be pressed
 while True:
-    if GPIO.input(SWITCH_PIN) == GPIO.LOW:
+    if GPIO.input(SWITCH_PIN) == GPIO.HIGH:
         run_program()
 
