@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import subprocess
 import time
 
-SWITCH_PIN = 16
+SWITCH_PIN = 26
 # Set up the GPIO pin
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SWITCH_PIN, GPIO.IN)
