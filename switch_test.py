@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import subprocess
+import time
 
 SWITCH_PIN = 16
 # Set up the GPIO pin
@@ -19,7 +20,8 @@ while True:
 
     # perform some action based on the input state
     if input_state == GPIO.HIGH:
-        run_program()
-        
- 
+        print("Button is not pressed")
+    else:
+        print("Button is pressed")
+    time.sleep(1)
 
