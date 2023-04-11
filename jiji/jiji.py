@@ -249,7 +249,27 @@ class Jiji():
         fig.set_size_inches(20, 20)
         plt.show()
 
-    # Begin NPL Helpers
+    def rate_of_change(self):
+        # Define the initial and final position of the object (in meters)
+        initial_position = self.vector[0]
+        final_position = self.vector[-1]
+
+        # Define the initial and final time (in seconds)
+        initial_time = 0
+        final_time = len(self.vector)
+
+        # Calculate the change in position and time
+        change_in_position = final_position - initial_position
+        change_in_time = final_time - initial_time
+
+        # Calculate the rate of change (velocity) of the object
+        velocity = change_in_position / change_in_time
+        self.rate_of_change = velocity
+
+        # Print the result
+        print("The rate of change of the position of the object is:", velocity, "m/s")
+        # Begin NPL Helpers
+    
     def freq_count(self,path):
         with open(path, 'r') as file:
             book = file.read()
