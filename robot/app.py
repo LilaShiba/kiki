@@ -15,15 +15,20 @@ app = Flask(__name__)
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 30
+
 PIR_PIN = 26
 IR_LED_PIN = 17  
 SERVO_PIN = 18
+SWITCH_PIN = 16
+
 
 # Set GPIO pins
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)
 GPIO.setup(IR_LED_PIN, GPIO.OUT)
 GPIO.setup(SERVO_PIN, GPIO.OUT)
+# Set GPIO pin 16 as input with a pull-up resistor
+GPIO.setup(SWITCH_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
 def gen():
@@ -125,7 +130,55 @@ def ir():
         time.sleep(1)  # Wait for 1 second before sending another signal
     cycle = {'status': 'complete'}
     return render_template('ir.html',data=cycle)
+
+# Control Panel
+@app.route('control_init')
+def control_init():
+
+    # Set initial state
+    state = GPIO.input(SWITCH_PIN)
+
+    while True:
+        # Read input state
+        input_state = GPIO.input(SWITCH_PIN)
+
+        # If input state has changed
+        if input_state != state:
+            state = input_state
+
+        # If switch is turned on
+        if state == GPIO.LOW:
+            print("Switch turned ON")
+            # run your program here
+            os.system("sudo python3 kiki/jiji/main.py")
+
+    # Wait a short time before checking again
+    time.sleep(0.1)
     
+# TODO pipe in form
+# Servo Control
+@app.route('/servo')
+def servo():
+    change_servo()
+# define angle-to-duty-cycle function
+def angle_to_duty_cycle(angle):
+    duty_cycle = angle / 18.0 + 2.5
+    return duty_cycle
+
+def change_servo():
+    pwm = GPIO.PWM(SERVO_PIN, 50) # 50 Hz frequency
+    angle = int(input("Enter angle (0-180): "))
+    # convert angle to duty cycle
+    duty_cycle = angle_to_duty_cycle(angle)
+    # move servo to specified angle
+    pwm.ChangeDutyCycle(duty_cycle)
+    time.sleep(0.5)
+
+
+
+
+
+
 
 # IR pulses for various off commands
 off_signals = {
